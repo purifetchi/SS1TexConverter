@@ -9,6 +9,7 @@ namespace SS1TexConverter
     class TGA
     {
         private Bitmap image;
+        private byte[] targaHeader = { 0x0, 0x0, 0x2, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
 
         public TGA(Image input)
         {
@@ -20,33 +21,23 @@ namespace SS1TexConverter
             using (BinaryWriter writer = new BinaryWriter(File.Open(filename, FileMode.Create)))
             {
                 // TGA HEADER
-                writer.Write((char)0x0);
-                writer.Write((char)0x0);
-                writer.Write((char)0x2); // UNCOMPRESSED TGA
-                writer.Write((char)0x0);
-                writer.Write((char)0x0);
-                writer.Write((char)0x0);
-                writer.Write((char)0x0);
-                writer.Write((char)0x0);
-                writer.Write((char)0x0);
-                writer.Write((char)0x0);
-                writer.Write((char)0x0);
-                writer.Write((char)0x0);
-                writer.Write((char)(image.Width & 0x00FF));          // LOWER WIDTH  BYTES
-                writer.Write((char)((image.Width & 0xFF00) / 256));  // UPPER WIDTH  BYTES
-                writer.Write((char)(image.Height & 0x00FF));         // LOWER HEIGHT BYTES
-                writer.Write((char)((image.Height & 0xFF00) / 256)); // UPPER HEIGHT BYTES
+                writer.Write(targaHeader);
+
+                writer.Write((byte)(image.Width & 0x00FF));          // LOWER WIDTH  BYTES
+                writer.Write((byte)((image.Width & 0xFF00) / 256));  // UPPER WIDTH  BYTES
+                writer.Write((byte)(image.Height & 0x00FF));         // LOWER HEIGHT BYTES
+                writer.Write((byte)((image.Height & 0xFF00) / 256)); // UPPER HEIGHT BYTES
 
                 if (format == PixelFormat.Format24bppRgb) // 24BPP RGB
                 {
-                    writer.Write((char)0x18);
+                    writer.Write((byte)0x18);
                 }
                 else //32BPP ARGB
                 {
-                    writer.Write((char)0x20);
+                    writer.Write((byte)0x20);
                 }
 
-                writer.Write((char)0x0);
+                writer.Write((byte)0x0);
 
                 for (int y = image.Height-1; y > -1; y--)
                     for (int x = 0; x < image.Width; x++)

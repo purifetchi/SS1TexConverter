@@ -63,20 +63,20 @@ namespace SS1TexConverter
             int width = Convert.ToInt32(data[0x13]) * 0x400 + Convert.ToInt32(data[0x12]) * 0x200 + Convert.ToInt32(data[0x11]) * 0x100 + Convert.ToInt32(data[0x10]);
             int height = Convert.ToInt32(data[0x17]) * 0x400 + Convert.ToInt32(data[0x16]) * 0x200 + Convert.ToInt32(data[0x15]) * 0x100 + Convert.ToInt32(data[0x14]);
             int mystery = Convert.ToInt32(data[0x1F]) * 0x400 + Convert.ToInt32(data[0x1E]) * 0x200 + Convert.ToInt32(data[0x1D]) * 0x100 + Convert.ToInt32(data[0x1C]);
-            int depthflag = Convert.ToInt32(data[0xC]);
+            short depthflag = Convert.ToInt16(data[0xC]);
 
-            int bitdepth = 4;
+            short bitdepth = 4;
 
             if ((depthflag == 0) || (depthflag == 2))
             {
                 bitdepth = 3;
             }
 
-            int mystery_counter = 1;
+            short mystery_counter = 1;
 
             for (int i = 1; i < mystery+1; i++)
             {
-                mystery_counter = (mystery_counter * 2);
+                mystery_counter = (short)(mystery_counter * 2);
             }
 
             width = Convert.ToInt32(Convert.ToDouble(width) / Convert.ToDouble(mystery_counter));
@@ -111,17 +111,14 @@ namespace SS1TexConverter
                     if (bitdepth == 3)
                     {
                         for (int z = upper; z >= lower; z += step)
-                        {
                             colordata[z] = Convert.ToInt32(data[0x28 + pos + z]);
-                        }
+
                         bmp.SetPixel(x, y, Color.FromArgb(colordata[0], colordata[1], colordata[2]));
                     }
                     else
                     {
                         for (int z = upper; z <= lower; z += step)
-                        {
                             colordata[z] = Convert.ToInt32(data[0x28 + pos + z]);
-                        }
 
                         bmp.SetPixel(x, y, Color.FromArgb(colordata[3], colordata[0], colordata[1], colordata[2]));
                     }
@@ -133,40 +130,45 @@ namespace SS1TexConverter
             return bmp;
         }
 
+        private void saveFile(Bitmap bmp, string filename, string format)
+        {
+            switch (format)
+            {
+                case ".jpg":
+                    bmp.Save(filename, ImageFormat.Jpeg);
+                    break;
+                case ".png":
+                    bmp.Save(filename, ImageFormat.Png);
+                    break;
+                case ".tga":
+                    TGA targa = new TGA(bmp);
+                    targa.SaveAsTarga(filename, bmp.PixelFormat);
+                    targa.Dispose();
+                    break;
+                case ".tif":
+                    bmp.Save(filename, ImageFormat.Tiff);
+                    break;
+                case ".bmp":
+                    bmp.Save(filename, ImageFormat.Bmp);
+                    break;
+                default:
+                    this.statusLabel.Text = "Error converting, unknown format!";
+                    break;
+            }
+        }
+
         private void convertAllButton_Click(object sender, EventArgs e)
         {
             string format = this.outputFormat.SelectedItem.ToString();
 
             foreach (string filename in this.listBox1.Items)
             {
-                
-                Bitmap tmp = convertTexToImage(filename);
+                Bitmap bmp = convertTexToImage(filename);
                 string newfilename = outputFolder + "/" + Path.GetFileNameWithoutExtension(filename) + format;
 
-                switch (format)
-                {
-                    case ".jpg":
-                        tmp.Save(newfilename, ImageFormat.Jpeg);
-                        break;
-                    case ".png":
-                        tmp.Save(newfilename, ImageFormat.Png);
-                        break;
-                    case ".tga":
-                        TGA targa = new TGA(tmp);
-                        targa.SaveAsTarga(newfilename, tmp.PixelFormat);
-                        targa.Dispose();
-                        break;
-                    case ".tif":
-                        tmp.Save(newfilename, ImageFormat.Tiff);
-                        break;
-                    case ".bmp":
-                        tmp.Save(newfilename, ImageFormat.Bmp);
-                        break;
-                    default:
-                        this.statusLabel.Text = "Error converting, unknown format!";
-                        break;
-                }
-                tmp.Dispose();
+                saveFile(bmp, newfilename, format);
+
+                bmp.Dispose();
             }
         }
 
@@ -180,34 +182,12 @@ namespace SS1TexConverter
         {
             string format   = this.outputFormat.SelectedItem.ToString();
             string filename = this.listBox1.SelectedItem.ToString();
-
-            Bitmap tmp = convertTexToImage(filename);
             string newfilename = outputFolder + "/" + Path.GetFileNameWithoutExtension(filename) + format;
 
-            switch (format)
-            {
-                case ".jpg":
-                    tmp.Save(newfilename, ImageFormat.Jpeg);
-                    break;
-                case ".png":
-                    tmp.Save(newfilename, ImageFormat.Png);
-                    break;
-                case ".tga":
-                    TGA targa = new TGA(tmp);
-                    targa.SaveAsTarga(newfilename, tmp.PixelFormat);
-                    targa.Dispose();
-                    break;
-                case ".tif":
-                    tmp.Save(newfilename, ImageFormat.Tiff);
-                    break;
-                case ".bmp":
-                    tmp.Save(newfilename, ImageFormat.Bmp);
-                    break;
-                default:
-                    this.statusLabel.Text = "Error converting, unknown format!";
-                    break;
-            }
-            tmp.Dispose();
+            Bitmap bmp = convertTexToImage(filename);
+            saveFile(bmp, newfilename, format);
+            
+            bmp.Dispose();
         }
 
         private void mainForm_DragEnter(object sender, DragEventArgs e)
