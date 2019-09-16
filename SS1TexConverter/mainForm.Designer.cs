@@ -45,6 +45,7 @@
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.copyToClipboard = new System.Windows.Forms.Button();
             this.convertSelectedButton = new System.Windows.Forms.Button();
+            this.textureInfoBox = new System.Windows.Forms.RichTextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.statusStrip1.SuspendLayout();
@@ -183,12 +184,23 @@
             this.convertSelectedButton.UseVisualStyleBackColor = true;
             this.convertSelectedButton.Click += new System.EventHandler(this.convertSelectedButton_Click);
             // 
+            // textureInfoBox
+            // 
+            this.textureInfoBox.Enabled = false;
+            this.textureInfoBox.Location = new System.Drawing.Point(186, 348);
+            this.textureInfoBox.Multiline = false;
+            this.textureInfoBox.Name = "textureInfoBox";
+            this.textureInfoBox.Size = new System.Drawing.Size(255, 34);
+            this.textureInfoBox.TabIndex = 8;
+            this.textureInfoBox.Text = "";
+            // 
             // mainForm
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(454, 414);
+            this.Controls.Add(this.textureInfoBox);
             this.Controls.Add(this.convertSelectedButton);
             this.Controls.Add(this.copyToClipboard);
             this.Controls.Add(this.convertAllButton);
@@ -232,6 +244,7 @@
         private System.Windows.Forms.ToolStripComboBox outputFormat;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.RichTextBox textureInfoBox;
 
     }
 }

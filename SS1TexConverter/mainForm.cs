@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Drawing.Imaging;
@@ -14,6 +12,7 @@ namespace SS1TexConverter
     public partial class mainForm : Form
     {
         public string outputFolder;
+        private Texture currentPrev = null;
         public mainForm()
         {
             InitializeComponent();
@@ -46,88 +45,31 @@ namespace SS1TexConverter
         {
             try
             {
+                if (this.listBox1.SelectedItem == null) // Don't handle nothing.
+                    return;
+
+                string filename = this.listBox1.SelectedItem.ToString();
+
                 this.copyToClipboard.Enabled = true;
-                this.pictureBox1.Image = convertTexToImage(this.listBox1.SelectedItem.ToString());
+                if (this.currentPrev != null)
+                {
+                    this.currentPrev.Dispose();
+                    this.currentPrev = null;
+                }
+                this.currentPrev = new Texture(filename);
+                this.pictureBox1.Image = this.currentPrev.image;
+
+                string alpha = this.currentPrev.hasAlpha ? "RGBA" : "RGB";
+
+                this.textureInfoBox.Text = "Version: " + this.currentPrev.version.ToString() + " / " + this.currentPrev.width.ToString() + "x" + this.currentPrev.height.ToString() + " / " + alpha;
+
+                GC.Collect();
             }
-            catch
+            catch (Exception ex)
             {
                 this.statusLabel.Text = "Error";
+                this.textureInfoBox.Text = ex.ToString();
             }
-        }
-
-        private Bitmap convertTexToImage(string filename)
-        {
-            this.statusLabel.Text = "Working...";
-            byte[] data = File.ReadAllBytes(filename);
-
-            int width = Convert.ToInt32(data[0x13]) * 0x400 + Convert.ToInt32(data[0x12]) * 0x200 + Convert.ToInt32(data[0x11]) * 0x100 + Convert.ToInt32(data[0x10]);
-            int height = Convert.ToInt32(data[0x17]) * 0x400 + Convert.ToInt32(data[0x16]) * 0x200 + Convert.ToInt32(data[0x15]) * 0x100 + Convert.ToInt32(data[0x14]);
-            int mystery = Convert.ToInt32(data[0x1F]) * 0x400 + Convert.ToInt32(data[0x1E]) * 0x200 + Convert.ToInt32(data[0x1D]) * 0x100 + Convert.ToInt32(data[0x1C]);
-            short depthflag = Convert.ToInt16(data[0xC]);
-
-            short bitdepth = 4;
-
-            if ((depthflag == 0) || (depthflag == 2))
-            {
-                bitdepth = 3;
-            }
-
-            short mystery_counter = 1;
-
-            for (int i = 1; i < mystery+1; i++)
-            {
-                mystery_counter = (short)(mystery_counter * 2);
-            }
-
-            width = Convert.ToInt32(Convert.ToDouble(width) / Convert.ToDouble(mystery_counter));
-            height = Convert.ToInt32(Convert.ToDouble(height) / Convert.ToDouble(mystery_counter));
-
-            PixelFormat format = PixelFormat.Format32bppArgb;
-
-            if (bitdepth == 3)
-            {
-                format = PixelFormat.Format24bppRgb;
-            }
-
-            Bitmap bmp = new Bitmap(width, height, format);
-
-            int upper = 0;
-            int lower = 3;
-            int step = 1;
-
-            if (bitdepth == 3)
-            {
-                upper = 3;
-                lower = 0;
-                step = -1;
-            }
-
-            int pos = 0;
-            for (int y = 0; y < height; y++)
-                for (int x = 0; x < width; x++)
-                {
-                    int[] colordata = { 0, 0, 0, 0 };
-
-                    if (bitdepth == 3)
-                    {
-                        for (int z = upper; z >= lower; z += step)
-                            colordata[z] = Convert.ToInt32(data[0x28 + pos + z]);
-
-                        bmp.SetPixel(x, y, Color.FromArgb(colordata[0], colordata[1], colordata[2]));
-                    }
-                    else
-                    {
-                        for (int z = upper; z <= lower; z += step)
-                            colordata[z] = Convert.ToInt32(data[0x28 + pos + z]);
-
-                        bmp.SetPixel(x, y, Color.FromArgb(colordata[3], colordata[0], colordata[1], colordata[2]));
-                    }
-
-                    pos += bitdepth;
-                }
-            this.statusLabel.Text = "Done.";
-
-            return bmp;
         }
 
         private void saveFile(Bitmap bmp, string filename, string format)
@@ -163,13 +105,14 @@ namespace SS1TexConverter
 
             foreach (string filename in this.listBox1.Items)
             {
-                Bitmap bmp = convertTexToImage(filename);
+                Texture tex = new Texture(filename);
                 string newfilename = outputFolder + "/" + Path.GetFileNameWithoutExtension(filename) + format;
 
-                saveFile(bmp, newfilename, format);
+                saveFile(tex.image, newfilename, format);
 
-                bmp.Dispose();
+                tex.Dispose();
             }
+            
         }
 
         private void copyToClipboard_Click(object sender, EventArgs e)
@@ -184,10 +127,7 @@ namespace SS1TexConverter
             string filename = this.listBox1.SelectedItem.ToString();
             string newfilename = outputFolder + "/" + Path.GetFileNameWithoutExtension(filename) + format;
 
-            Bitmap bmp = convertTexToImage(filename);
-            saveFile(bmp, newfilename, format);
-            
-            bmp.Dispose();
+            saveFile(this.currentPrev.image, newfilename, format);
         }
 
         private void mainForm_DragEnter(object sender, DragEventArgs e)
