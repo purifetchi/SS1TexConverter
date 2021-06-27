@@ -34,8 +34,12 @@ namespace SS1TexConverter
         private bool useFileFolderAsOutputFodler;
         private string userOutputFolder;
 
+        private HashSet<string> listBoxUniqueStrings;
+
         public mainForm()
         {
+            listBoxUniqueStrings = new HashSet<string>();
+
             InitializeComponent();
             UpdateFileFolderSettings();
 
@@ -271,6 +275,42 @@ namespace SS1TexConverter
             }
         }
 
+        private bool TryToAddToListBox(string p)
+        {
+            // maintain only unique paths
+            if (!listBoxUniqueStrings.Contains(p))
+            {
+                listBox1.Items.Add(p);
+
+                listBoxUniqueStrings.Add(p);
+                return true;
+            }
+
+            ShowStatus("File \"" + p + "\" was already added");
+            return false;
+        }
+
+        private void RemoveAllFromListBox()
+        {
+            listBox1.Items.Clear();
+            listBoxUniqueStrings.Clear();
+        }
+        private void RemoveSelectedFromListBox()
+        {
+            var toRemove = new List<string>(listBox1.SelectedItems.Count);
+
+            foreach (string s in listBox1.SelectedItems)
+            {
+                toRemove.Add(s);
+            }
+
+            foreach (string s in toRemove)
+            {
+                listBox1.Items.Remove(s);
+                listBoxUniqueStrings.Remove(s);
+            }
+        }
+
         private void mainForm_DragDrop(object sender, DragEventArgs e)
         {
             string[] filenames = (string[])e.Data.GetData(DataFormats.FileDrop, false);
@@ -284,12 +324,12 @@ namespace SS1TexConverter
 
                     foreach (var f in files)
                     {
-                        listBox1.Items.Add(f);
+                        TryToAddToListBox(f);
                     }
                 }
                 else if (Path.GetExtension(n) == ".tex")
                 {
-                    listBox1.Items.Add(n);
+                    TryToAddToListBox(n);
                 }
             }
 
@@ -314,12 +354,12 @@ namespace SS1TexConverter
 
         private void closeAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            RemoveAllFromListBox();
         }
 
         private void closeSelectedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            RemoveSelectedFromListBox();
         }
     }
 }
