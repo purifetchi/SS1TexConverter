@@ -189,10 +189,10 @@
             this.outputFolderCurrentSelectedLabel.AutoEllipsis = true;
             this.outputFolderCurrentSelectedLabel.BackColor = System.Drawing.SystemColors.Control;
             this.outputFolderCurrentSelectedLabel.Enabled = false;
-            this.outputFolderCurrentSelectedLabel.Location = new System.Drawing.Point(775, 468);
+            this.outputFolderCurrentSelectedLabel.Location = new System.Drawing.Point(827, 468);
             this.outputFolderCurrentSelectedLabel.Name = "outputFolderCurrentSelectedLabel";
             this.outputFolderCurrentSelectedLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.outputFolderCurrentSelectedLabel.Size = new System.Drawing.Size(369, 23);
+            this.outputFolderCurrentSelectedLabel.Size = new System.Drawing.Size(317, 23);
             this.outputFolderCurrentSelectedLabel.TabIndex = 12;
             this.outputFolderCurrentSelectedLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 

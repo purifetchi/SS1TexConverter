@@ -20,11 +20,6 @@ namespace SS1TexConverter
         private PixelFormat imageFormat = PixelFormat.Format32bppArgb;
         private bool hasAlpha = true;
 
-        public Texture(string filename)
-        {
-            this.FromFile(filename);
-        }
-
         private int GetFirstMipLevel(byte[] data)
         {
             if (this.version == 4)

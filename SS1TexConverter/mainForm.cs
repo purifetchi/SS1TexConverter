@@ -45,6 +45,9 @@ namespace SS1TexConverter
 
             formatComboBox.Items.AddRange(OutputFormats);
             formatComboBox.SelectedItem = DefaultOutputFormat;
+
+            userOutputFolder = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+            outputFolderCurrentSelectedLabel.Text = userOutputFolder;
         }
 
         private void UpdateFileFolderSettings()
@@ -127,7 +130,8 @@ namespace SS1TexConverter
                     currentlyShownTexture.Dispose();
                 }
 
-                currentlyShownTexture = new Texture(filename);
+                currentlyShownTexture = new Texture();
+                currentlyShownTexture.FromFile(filename);
                 pictureBox1.Image = currentlyShownTexture.Image;
 
                 copyToClipboard.Enabled = true;
@@ -174,46 +178,36 @@ namespace SS1TexConverter
             }
         }
 
-        private bool TryToConvertTexture(string format, string filename)
+        private void ConvertTexture(string format, string filename)
         {
-            try
-            {
-                using (Texture tex = new Texture(filename))
+            using (Texture tex = new Texture())
+            { 
+                try
                 {
-                    try
-                    {
-                        string name = Path.GetFileNameWithoutExtension(filename);
-                        string newFile = GetOutputFolder(filename) + "/" + name + format;
+                    tex.FromFile(filename);
+                }
+                catch
+                {
+                    throw new Exception("Can't parse texture");
+                }
 
-                        // if file already exists, and overwriting is not forced
-                        if (File.Exists(newFile) && !forceOverwritingCheckBox.Checked)
-                        {
-                            string msg = "File with the path \"" + newFile + "\" already exists. Overwrite it?";
-                            DialogResult dialogResult = MessageBox.Show(msg, "Overwrite file", MessageBoxButtons.YesNo);
-                            
-                            if (dialogResult == DialogResult.No)
-                            {
-                                return true;
-                            }
-                        }
+                string name = Path.GetFileNameWithoutExtension(filename);
+                string newFile = GetOutputFolder(filename) + "/" + name + format;
 
-                        SaveFile(tex.Image, newFile, format);
-                        ShowStatus("Converted " + name);
-                    }
-                    catch (Exception ex)
+                // if file already exists, and overwriting is not forced
+                if (File.Exists(newFile) && !forceOverwritingCheckBox.Checked)
+                {
+                    string msg = "File with the path \"" + newFile + "\" already exists. Overwrite it?";
+                    DialogResult dialogResult = MessageBox.Show(msg, "Overwrite file", MessageBoxButtons.YesNo);
+
+                    if (dialogResult == DialogResult.No)
                     {
-                        ShowException(ex);
-                        return false;
+                        return;
                     }
                 }
-            }
-            catch
-            {
-                ShowException(new Exception("Can't parse \"" + filename + "\" texture"));
-                return false;
-            }
 
-            return true;
+                SaveFile(tex.Image, newFile, format);
+            }
         }
 
         private void convertAllButton_Click(object sender, EventArgs e)
@@ -224,11 +218,13 @@ namespace SS1TexConverter
 
             foreach (string filename in listBox1.Items)
             {
-                bool success = TryToConvertTexture(format, filename);
-
-                if (!success)
+                try
                 {
-                    fails.Add(filename);
+                    ConvertTexture(format, filename);
+                }
+                catch (Exception ex)
+                {
+                    fails.Add(filename + ": " + ex.Message);
                 }
             }
 
@@ -256,11 +252,13 @@ namespace SS1TexConverter
 
             foreach (string filename in listBox1.SelectedItems)
             {
-                bool success = TryToConvertTexture(format, filename);
-
-                if (!success)
+                try
                 {
-                    fails.Add(filename);
+                    ConvertTexture(format, filename);
+                }
+                catch (Exception ex)
+                {
+                    fails.Add(filename + ": " + ex.Message);
                 }
             }
 
