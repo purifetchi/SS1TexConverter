@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
 using System.Drawing.Imaging;
+using System.Text;
 
 namespace SS1TexConverter
 {
@@ -28,18 +29,18 @@ namespace SS1TexConverter
             FormatBMP
         };
 
+        private Texture currentlyShownTexture;
+
         public bool UseFileFolderAsOutputFodler;
         public string UserOutputFolder;
-
-        private Texture currentPrev = null;
 
         public mainForm()
         {
             InitializeComponent();
             UpdateFileFolderSettings();
 
-            this.formatComboBox.Items.AddRange(OutputFormats);
-            this.formatComboBox.SelectedItem = DefaultOutputFormat;
+            formatComboBox.Items.AddRange(OutputFormats);
+            formatComboBox.SelectedItem = DefaultOutputFormat;
         }
 
         private void UpdateFileFolderSettings()
@@ -64,63 +65,100 @@ namespace SS1TexConverter
             return folder;
         }
 
+        private void ShowStatus(string s)
+        {
+            statusLabel.Text = s;
+        }
+
+        private void ShowDone(string baseText, ICollection<string> fails)
+        {
+            StringBuilder str = new StringBuilder();
+            str.Append(baseText);
+
+            int badCount = fails.Count;
+
+            if (badCount > 0)
+            {
+                str.Append(". ");
+                str.Append(badCount);
+                str.Append(badCount == 1 ? " fail" : " fails");
+                str.Append(" (hover the mouse over to see details)\n");
+
+                foreach (var f in fails)
+                {
+                    str.Append("    ");
+                    str.Append(f);
+                    str.Append("\n");
+                }
+            }
+
+            ShowStatus(str.ToString());
+        }
+
+        private void ShowTextureInfo(string s)
+        {
+            textureInfoLabel.Text = s;
+        }
+
         private void ShowException(Exception ex)
         {
-            this.statusLabel.Text = "Error: " + ex.ToString();
-            this.textureInfoLabel.Text = "";
+            ShowStatus("Error: " + ex.Message);
+            ShowTextureInfo("");
         }
 
         private void addFilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            DialogResult dr = this.openFileDialog1.ShowDialog();
+            DialogResult dr = openFileDialog1.ShowDialog();
             if (dr == DialogResult.OK)
             {
                 foreach (string file in openFileDialog1.FileNames)
                 {
-                    this.listBox1.Items.Add(file);
+                    listBox1.Items.Add(file);
                 }
             }
 
-            convertAllButton.Enabled = this.listBox1.Items.Count > 0;
+            convertAllButton.Enabled = listBox1.Items.Count > 0;
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (listBox1.SelectedItems.Count == 0 || listBox1.SelectedItem == null)
+            {
+                convertSelectedButton.Enabled = false;
+                return;
+            }
+
+            string filename = listBox1.SelectedItem.ToString();
+
             try
             {
-                if (this.listBox1.SelectedItem == null) // Don't handle nothing.
+                if (currentlyShownTexture != null)
                 {
-                    convertSelectedButton.Enabled = false;
-                    return;
+                    currentlyShownTexture.Dispose();
                 }
 
-                string filename = this.listBox1.SelectedItem.ToString();
+                currentlyShownTexture = new Texture(filename);
+                pictureBox1.Image = currentlyShownTexture.Image;
 
-                this.copyToClipboard.Enabled = true;
-                if (this.currentPrev != null)
-                {
-                    this.currentPrev.Dispose();
-                    this.currentPrev = null;
-                }
-                this.currentPrev = new Texture(filename);
-                this.pictureBox1.Image = this.currentPrev.image;
+                copyToClipboard.Enabled = true;
+                convertSelectedButton.Enabled = true;
 
-                string alpha = this.currentPrev.hasAlpha ? "RGBA" : "RGB";
-
-                this.textureInfoLabel.Text = "Version: " + this.currentPrev.version.ToString() + " / " + this.currentPrev.width.ToString() + "x" + this.currentPrev.height.ToString() + " / " + alpha;
-
-
-                this.convertSelectedButton.Enabled = true;
+                ShowStatus("Selected " + Path.GetFileName(filename));
+                ShowTextureInfo(currentlyShownTexture.InfoText);
             }
-            catch (Exception ex)
+            catch
             {
-                ShowException(ex);
+                currentlyShownTexture = null;
+                pictureBox1.Image = null;
 
-                this.convertSelectedButton.Enabled = false;
+                copyToClipboard.Enabled = false;
+                convertSelectedButton.Enabled = false;
+
+                ShowException(new Exception("Can't parse \"" + filename + "\" texture"));
             }
         }
 
-        private void saveFile(Bitmap bmp, string filename, string format)
+        private void SaveFile(Bitmap bmp, string filename, string format)
         {
             switch (format)
             {
@@ -146,11 +184,9 @@ namespace SS1TexConverter
             }
         }
 
-        private void convertAllButton_Click(object sender, EventArgs e)
+        private bool TryToConvertTexture(string format, string filename)
         {
-            string format = this.formatComboBox.SelectedItem.ToString();
-
-            foreach (string filename in this.listBox1.Items)
+            try
             {
                 using (Texture tex = new Texture(filename))
                 {
@@ -159,41 +195,74 @@ namespace SS1TexConverter
                         string name = Path.GetFileNameWithoutExtension(filename);
                         string newFile = GetOutputFolder(filename) + "/" + name + format;
 
-                        saveFile(tex.image, newFile, format);
-
-                        this.statusLabel.Text = "Converted " + name;
+                        SaveFile(tex.Image, newFile, format);
+                        ShowStatus("Converted " + name);
                     }
                     catch (Exception ex)
                     {
                         ShowException(ex);
+                        return false;
                     }
                 }
             }
+            catch
+            {
+                ShowException(new Exception("Can't parse \"" + filename + "\" texture"));
+                return false;
+            }
+
+            return true;
+        }
+
+        private void convertAllButton_Click(object sender, EventArgs e)
+        {
+            string format = formatComboBox.SelectedItem.ToString();
+
+            List<string> fails = new List<string>();
+
+            foreach (string filename in listBox1.Items)
+            {
+                bool success = TryToConvertTexture(format, filename);
+
+                if (!success)
+                {
+                    fails.Add(filename);
+                }
+            }
+
+            ShowDone("Done converting all", fails);
         }
 
         private void copyToClipboard_Click(object sender, EventArgs e)
         {
-            Clipboard.SetImage(this.pictureBox1.Image);
-            this.statusLabel.Text = "Copied";
+            if (pictureBox1.Image != null)
+            {
+                Clipboard.SetImage(pictureBox1.Image);
+                ShowStatus("Copied to clipboard");
+            }
+            else
+            {
+                ShowStatus("Nothing to copy to clipboard");
+            }
         }
 
         private void convertSelectedButton_Click(object sender, EventArgs e)
         {
-            try
-            {
-                string format   = this.formatComboBox.SelectedItem.ToString();
-                string filename = this.listBox1.SelectedItem.ToString();
-                string name = Path.GetFileNameWithoutExtension(filename);
-                string newFile = GetOutputFolder(filename) + "/" + name + format;
+            string format = formatComboBox.SelectedItem.ToString();
 
-                saveFile(this.currentPrev.image, newFile, format);
+            List<string> fails = new List<string>();
 
-                this.statusLabel.Text = "Converted " + name;
-            }
-            catch (Exception ex)
+            foreach (string filename in listBox1.SelectedItems)
             {
-                ShowException(ex);
+                bool success = TryToConvertTexture(format, filename);
+
+                if (!success)
+                {
+                    fails.Add(filename);
+                }
             }
+
+            ShowDone("Done converting selected", fails);
         }
 
         private void mainForm_DragEnter(object sender, DragEventArgs e)
@@ -208,15 +277,25 @@ namespace SS1TexConverter
         {
             string[] filenames = (string[])e.Data.GetData(DataFormats.FileDrop, false);
            
-            for (int i = 0; i < filenames.Length; i++)
+            foreach (string n in filenames)
             {
-                if (Path.GetExtension(filenames[i]) == ".tex")
+                // if it's a directory, then process all files in it
+                if (Directory.Exists(n))
                 {
-                    this.listBox1.Items.Add(filenames[i]);
+                    string[] files = Directory.GetFiles(n, "*.tex", SearchOption.AllDirectories);
+
+                    foreach (var f in files)
+                    {
+                        listBox1.Items.Add(f);
+                    }
+                }
+                else if (Path.GetExtension(n) == ".tex")
+                {
+                    listBox1.Items.Add(n);
                 }
             }
 
-            convertAllButton.Enabled = this.listBox1.Items.Count > 0;
+            convertAllButton.Enabled = listBox1.Items.Count > 0;
         }
 
         private void useFileFolderCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -233,6 +312,16 @@ namespace SS1TexConverter
 
                 outputFolderCurrentSelectedLabel.Text = UserOutputFolder;
             }
+        }
+
+        private void closeAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void closeSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
