@@ -32,8 +32,10 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(mainForm));
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.listBox1 = new System.Windows.Forms.ListBox();
+            this.inputListContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.closeSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.closeAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.convertAllButton = new System.Windows.Forms.Button();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.copyToClipboard = new System.Windows.Forms.Button();
             this.convertSelectedButton = new System.Windows.Forms.Button();
             this.useFileFolderCheckBox = new System.Windows.Forms.CheckBox();
@@ -44,10 +46,8 @@
             this.formatLabel = new System.Windows.Forms.Label();
             this.formatComboBox = new System.Windows.Forms.ComboBox();
             this.textureInfoLabel = new System.Windows.Forms.Label();
-            this.inputListContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.closeAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.closeSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusLabel = new System.Windows.Forms.Label();
+            this.forceOverwritingCheckBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.inputListContextMenuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -80,6 +80,29 @@
             this.listBox1.TabIndex = 3;
             this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
             // 
+            // inputListContextMenuStrip
+            // 
+            this.inputListContextMenuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.inputListContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.closeSelectedToolStripMenuItem,
+            this.closeAllToolStripMenuItem});
+            this.inputListContextMenuStrip.Name = "inputListContextMenuStrip";
+            this.inputListContextMenuStrip.Size = new System.Drawing.Size(174, 52);
+            // 
+            // closeSelectedToolStripMenuItem
+            // 
+            this.closeSelectedToolStripMenuItem.Name = "closeSelectedToolStripMenuItem";
+            this.closeSelectedToolStripMenuItem.Size = new System.Drawing.Size(173, 24);
+            this.closeSelectedToolStripMenuItem.Text = "Close selected";
+            this.closeSelectedToolStripMenuItem.Click += new System.EventHandler(this.closeSelectedToolStripMenuItem_Click);
+            // 
+            // closeAllToolStripMenuItem
+            // 
+            this.closeAllToolStripMenuItem.Name = "closeAllToolStripMenuItem";
+            this.closeAllToolStripMenuItem.Size = new System.Drawing.Size(173, 24);
+            this.closeAllToolStripMenuItem.Text = "Close all";
+            this.closeAllToolStripMenuItem.Click += new System.EventHandler(this.closeAllToolStripMenuItem_Click);
+            // 
             // convertAllButton
             // 
             this.convertAllButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
@@ -93,12 +116,6 @@
             this.convertAllButton.Text = "Convert All";
             this.convertAllButton.UseVisualStyleBackColor = true;
             this.convertAllButton.Click += new System.EventHandler(this.convertAllButton_Click);
-            // 
-            // openFileDialog1
-            // 
-            this.openFileDialog1.Filter = "tex Files (*.tex)|*.tex";
-            this.openFileDialog1.Multiselect = true;
-            this.openFileDialog1.Title = "Select Files";
             // 
             // copyToClipboard
             // 
@@ -134,9 +151,9 @@
             this.useFileFolderCheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.useFileFolderCheckBox.Checked = true;
             this.useFileFolderCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.useFileFolderCheckBox.Location = new System.Drawing.Point(622, 460);
+            this.useFileFolderCheckBox.Location = new System.Drawing.Point(623, 441);
             this.useFileFolderCheckBox.Name = "useFileFolderCheckBox";
-            this.useFileFolderCheckBox.Size = new System.Drawing.Size(628, 21);
+            this.useFileFolderCheckBox.Size = new System.Drawing.Size(627, 21);
             this.useFileFolderCheckBox.TabIndex = 9;
             this.useFileFolderCheckBox.Text = "Use source file folder as output folder";
             this.useFileFolderCheckBox.UseVisualStyleBackColor = true;
@@ -146,7 +163,7 @@
             // 
             this.outputFolderChooseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.outputFolderChooseButton.Enabled = false;
-            this.outputFolderChooseButton.Location = new System.Drawing.Point(1150, 487);
+            this.outputFolderChooseButton.Location = new System.Drawing.Point(1150, 468);
             this.outputFolderChooseButton.Name = "outputFolderChooseButton";
             this.outputFolderChooseButton.Size = new System.Drawing.Size(100, 23);
             this.outputFolderChooseButton.TabIndex = 10;
@@ -158,7 +175,7 @@
             // 
             this.outputFolderLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.outputFolderLabel.Enabled = false;
-            this.outputFolderLabel.Location = new System.Drawing.Point(624, 487);
+            this.outputFolderLabel.Location = new System.Drawing.Point(624, 468);
             this.outputFolderLabel.Name = "outputFolderLabel";
             this.outputFolderLabel.Size = new System.Drawing.Size(151, 23);
             this.outputFolderLabel.TabIndex = 9;
@@ -172,7 +189,7 @@
             this.outputFolderCurrentSelectedLabel.AutoEllipsis = true;
             this.outputFolderCurrentSelectedLabel.BackColor = System.Drawing.SystemColors.Control;
             this.outputFolderCurrentSelectedLabel.Enabled = false;
-            this.outputFolderCurrentSelectedLabel.Location = new System.Drawing.Point(775, 487);
+            this.outputFolderCurrentSelectedLabel.Location = new System.Drawing.Point(775, 468);
             this.outputFolderCurrentSelectedLabel.Name = "outputFolderCurrentSelectedLabel";
             this.outputFolderCurrentSelectedLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.outputFolderCurrentSelectedLabel.Size = new System.Drawing.Size(369, 23);
@@ -182,7 +199,7 @@
             // formatLabel
             // 
             this.formatLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.formatLabel.Location = new System.Drawing.Point(624, 516);
+            this.formatLabel.Location = new System.Drawing.Point(624, 497);
             this.formatLabel.Name = "formatLabel";
             this.formatLabel.Size = new System.Drawing.Size(274, 23);
             this.formatLabel.TabIndex = 13;
@@ -194,7 +211,7 @@
             this.formatComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.formatComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.formatComboBox.FormattingEnabled = true;
-            this.formatComboBox.Location = new System.Drawing.Point(1150, 516);
+            this.formatComboBox.Location = new System.Drawing.Point(1150, 497);
             this.formatComboBox.Name = "formatComboBox";
             this.formatComboBox.Size = new System.Drawing.Size(99, 24);
             this.formatComboBox.TabIndex = 14;
@@ -210,29 +227,6 @@
             this.textureInfoLabel.TabIndex = 15;
             this.textureInfoLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // inputListContextMenuStrip
-            // 
-            this.inputListContextMenuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.inputListContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.closeSelectedToolStripMenuItem,
-            this.closeAllToolStripMenuItem});
-            this.inputListContextMenuStrip.Name = "inputListContextMenuStrip";
-            this.inputListContextMenuStrip.Size = new System.Drawing.Size(174, 52);
-            // 
-            // closeAllToolStripMenuItem
-            // 
-            this.closeAllToolStripMenuItem.Name = "closeAllToolStripMenuItem";
-            this.closeAllToolStripMenuItem.Size = new System.Drawing.Size(173, 24);
-            this.closeAllToolStripMenuItem.Text = "Close all";
-            this.closeAllToolStripMenuItem.Click += new System.EventHandler(this.closeAllToolStripMenuItem_Click);
-            // 
-            // closeSelectedToolStripMenuItem
-            // 
-            this.closeSelectedToolStripMenuItem.Name = "closeSelectedToolStripMenuItem";
-            this.closeSelectedToolStripMenuItem.Size = new System.Drawing.Size(173, 24);
-            this.closeSelectedToolStripMenuItem.Text = "Close selected";
-            this.closeSelectedToolStripMenuItem.Click += new System.EventHandler(this.closeSelectedToolStripMenuItem_Click);
-            // 
             // statusLabel
             // 
             this.statusLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
@@ -245,12 +239,25 @@
             this.statusLabel.Text = "Drop folders or files to convert ";
             this.statusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // forceOverwritingCheckBox
+            // 
+            this.forceOverwritingCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.forceOverwritingCheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.forceOverwritingCheckBox.Location = new System.Drawing.Point(623, 526);
+            this.forceOverwritingCheckBox.Name = "forceOverwritingCheckBox";
+            this.forceOverwritingCheckBox.Size = new System.Drawing.Size(627, 21);
+            this.forceOverwritingCheckBox.TabIndex = 18;
+            this.forceOverwritingCheckBox.Text = "Force overwriting existing files";
+            this.forceOverwritingCheckBox.UseVisualStyleBackColor = true;
+            // 
             // mainForm
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1262, 673);
+            this.Controls.Add(this.forceOverwritingCheckBox);
             this.Controls.Add(this.statusLabel);
             this.Controls.Add(this.textureInfoLabel);
             this.Controls.Add(this.formatComboBox);
@@ -281,7 +288,6 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.Button convertAllButton;
-        private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.Button copyToClipboard;
         private System.Windows.Forms.Button convertSelectedButton;
         private System.Windows.Forms.CheckBox useFileFolderCheckBox;
@@ -296,6 +302,7 @@
         private System.Windows.Forms.ToolStripMenuItem closeAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem closeSelectedToolStripMenuItem;
         private System.Windows.Forms.Label statusLabel;
+        private System.Windows.Forms.CheckBox forceOverwritingCheckBox;
     }
 }
 

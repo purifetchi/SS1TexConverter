@@ -31,8 +31,8 @@ namespace SS1TexConverter
 
         private Texture currentlyShownTexture;
 
-        public bool UseFileFolderAsOutputFodler;
-        public string UserOutputFolder;
+        private bool useFileFolderAsOutputFodler;
+        private string userOutputFolder;
 
         public mainForm()
         {
@@ -45,17 +45,17 @@ namespace SS1TexConverter
 
         private void UpdateFileFolderSettings()
         {
-            UseFileFolderAsOutputFodler = useFileFolderCheckBox.Checked;
+            useFileFolderAsOutputFodler = useFileFolderCheckBox.Checked;
 
-            outputFolderLabel.Enabled = !UseFileFolderAsOutputFodler;
-            outputFolderCurrentSelectedLabel.Enabled = !UseFileFolderAsOutputFodler;
-            outputFolderChooseButton.Enabled = !UseFileFolderAsOutputFodler;
+            outputFolderLabel.Enabled = !useFileFolderAsOutputFodler;
+            outputFolderCurrentSelectedLabel.Enabled = !useFileFolderAsOutputFodler;
+            outputFolderChooseButton.Enabled = !useFileFolderAsOutputFodler;
         }
         public string GetOutputFolder(string filepath)
         {
-            string folder = UseFileFolderAsOutputFodler ?
+            string folder = useFileFolderAsOutputFodler ?
                 Path.GetDirectoryName(filepath) :
-                UserOutputFolder;
+                userOutputFolder;
 
             if (!Directory.Exists(folder))
             {
@@ -104,20 +104,6 @@ namespace SS1TexConverter
         {
             ShowStatus("Error: " + ex.Message);
             ShowTextureInfo("");
-        }
-
-        private void addFilesToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            DialogResult dr = openFileDialog1.ShowDialog();
-            if (dr == DialogResult.OK)
-            {
-                foreach (string file in openFileDialog1.FileNames)
-                {
-                    listBox1.Items.Add(file);
-                }
-            }
-
-            convertAllButton.Enabled = listBox1.Items.Count > 0;
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -194,6 +180,18 @@ namespace SS1TexConverter
                     {
                         string name = Path.GetFileNameWithoutExtension(filename);
                         string newFile = GetOutputFolder(filename) + "/" + name + format;
+
+                        // if file already exists, and overwriting is not forced
+                        if (File.Exists(newFile) && !forceOverwritingCheckBox.Checked)
+                        {
+                            string msg = "File with the path \"" + newFile + "\" already exists. Overwrite it?";
+                            DialogResult dialogResult = MessageBox.Show(msg, "Overwrite file", MessageBoxButtons.YesNo);
+                            
+                            if (dialogResult == DialogResult.No)
+                            {
+                                return true;
+                            }
+                        }
 
                         SaveFile(tex.Image, newFile, format);
                         ShowStatus("Converted " + name);
@@ -308,9 +306,9 @@ namespace SS1TexConverter
             DialogResult dr = outputFolderBrowserDialog.ShowDialog();
             if (dr == DialogResult.OK)
             {
-                UserOutputFolder = outputFolderBrowserDialog.SelectedPath;
+                userOutputFolder = outputFolderBrowserDialog.SelectedPath;
 
-                outputFolderCurrentSelectedLabel.Text = UserOutputFolder;
+                outputFolderCurrentSelectedLabel.Text = userOutputFolder;
             }
         }
 
