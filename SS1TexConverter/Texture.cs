@@ -6,7 +6,7 @@ using System.Drawing.Imaging;
 
 namespace SS1TexConverter
 {
-    class Texture
+    class Texture : IDisposable
     {
         public Texture()
         {
