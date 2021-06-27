@@ -8,28 +8,24 @@ namespace SS1TexConverter
 {
     class Texture : IDisposable
     {
-        public Texture()
-        {
-        }
+        public Bitmap Image;
+
+        private short version;
+
+        private int width;
+        private int height;
+        private int mipLevels;
+        private int frameOffset;
+
+        private PixelFormat imageFormat = PixelFormat.Format32bppArgb;
+        private bool hasAlpha = true;
 
         public Texture(string filename)
         {
-            this.fromFile(filename);
+            this.FromFile(filename);
         }
 
-        public short version;
-        public Bitmap image;
-        
-        public int height, width;
-        public int mipLevels;
-
-        public PixelFormat imageFormat = PixelFormat.Format32bppArgb;
-
-        public bool hasAlpha = true;
-
-        private int frameOffset;
-
-        private int getFirstMipLevel(byte[] data)
+        private int GetFirstMipLevel(byte[] data)
         {
             if (this.version == 4)
             {
@@ -41,7 +37,7 @@ namespace SS1TexConverter
             }
         }
 
-        public void fromFile(string filename)
+        public void FromFile(string filename)
         {
             byte[] data = File.ReadAllBytes(filename);
 
@@ -72,14 +68,14 @@ namespace SS1TexConverter
                 bitdepth = 2;
             }
 
-            int firstMipLevel = getFirstMipLevel(data);
+            int firstMipLevel = GetFirstMipLevel(data);
 
             short firstMipTexOffset = (short)Math.Pow(2, firstMipLevel);
 
             this.width = realWidth / firstMipTexOffset;
             this.height = realHeight / firstMipTexOffset;
 
-            this.image = new Bitmap(this.width, this.height, this.imageFormat);
+            this.Image = new Bitmap(this.width, this.height, this.imageFormat);
 
             int upper = 0;
             int lower = 3;
@@ -94,6 +90,7 @@ namespace SS1TexConverter
 
             int pos = 0;
             for (int y = 0; y < this.height; y++)
+            {
                 for (int x = 0; x < this.width; x++)
                 {
                     int[] colordata = { 0, 0, 0, 0 };
@@ -101,16 +98,20 @@ namespace SS1TexConverter
                     if (bitdepth == 3) // RGB888 | 24bit RGB without alpha
                     {
                         for (int z = upper; z >= lower; z += step)
+                        {
                             colordata[z] = Convert.ToInt32(data[this.frameOffset + pos + z]);
+                        }
 
-                        this.image.SetPixel(x, y, Color.FromArgb(colordata[0], colordata[1], colordata[2]));
+                        this.Image.SetPixel(x, y, Color.FromArgb(colordata[0], colordata[1], colordata[2]));
                     }
                     else if (bitdepth == 4) // RGBA8888 | 32bit RGB with 8-bit alpha
                     {
                         for (int z = upper; z <= lower; z += step)
+                        {
                             colordata[z] = Convert.ToInt32(data[this.frameOffset + pos + z]);
+                        }
 
-                        this.image.SetPixel(x, y, Color.FromArgb(colordata[3], colordata[0], colordata[1], colordata[2]));
+                        this.Image.SetPixel(x, y, Color.FromArgb(colordata[3], colordata[0], colordata[1], colordata[2]));
                     }
                     else // Version 3 handles colors differently. Rather than splitting every channel into 8 bits / 1 byte, it uses either RGBA4444 or RGBA5551 which need to be decoded separately.
                     {
@@ -126,7 +127,7 @@ namespace SS1TexConverter
                             a = (pixel & 0x000F) << 4;
 
                             r |= r >> 4; g |= g >> 4; b |= b >> 4; a |= a >> 4;
-                            this.image.SetPixel(x, y, Color.FromArgb(a, r, g, b));
+                            this.Image.SetPixel(x, y, Color.FromArgb(a, r, g, b));
                         }
                         else
                         {
@@ -135,17 +136,30 @@ namespace SS1TexConverter
                             b = (pixel & 0x003E) << 2;
 
                             r |= r >> 5; g |= g >> 5; b |= b >> 5;
-                            this.image.SetPixel(x, y, Color.FromArgb(r, g, b));
+                            this.Image.SetPixel(x, y, Color.FromArgb(r, g, b));
                         }
                     }
                     pos += bitdepth;
                 }
+            }
         }
 
         public void Dispose()
         {
-            this.image.Dispose();
-            GC.Collect();
+            this.Image.Dispose();
+        }
+
+        public string InfoText
+        {
+            get
+            {
+                string format = this.hasAlpha ? "RGBA" : "RGB";
+
+                return 
+                    "Version: " + this.version.ToString() +  " / " + 
+                    this.width.ToString() + "x" + this.height.ToString() + " / " +
+                    format;
+            }
         }
     }
 }

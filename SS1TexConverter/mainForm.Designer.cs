@@ -28,11 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(mainForm));
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.listBox1 = new System.Windows.Forms.ListBox();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.convertAllButton = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.copyToClipboard = new System.Windows.Forms.Button();
@@ -45,8 +44,12 @@
             this.formatLabel = new System.Windows.Forms.Label();
             this.formatComboBox = new System.Windows.Forms.ComboBox();
             this.textureInfoLabel = new System.Windows.Forms.Label();
+            this.inputListContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.closeAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.closeSelectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.statusStrip1.SuspendLayout();
+            this.inputListContextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // pictureBox1
@@ -67,32 +70,15 @@
             this.listBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.listBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.listBox1.ContextMenuStrip = this.inputListContextMenuStrip;
             this.listBox1.FormattingEnabled = true;
             this.listBox1.ItemHeight = 16;
             this.listBox1.Location = new System.Drawing.Point(16, 16);
             this.listBox1.Name = "listBox1";
+            this.listBox1.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             this.listBox1.Size = new System.Drawing.Size(600, 610);
             this.listBox1.TabIndex = 3;
             this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
-            // 
-            // statusStrip1
-            // 
-            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.statusLabel});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 647);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 19, 0);
-            this.statusStrip1.Size = new System.Drawing.Size(1262, 26);
-            this.statusStrip1.SizingGrip = false;
-            this.statusStrip1.TabIndex = 4;
-            this.statusStrip1.Text = "statusStrip1";
-            // 
-            // statusLabel
-            // 
-            this.statusLabel.Name = "statusLabel";
-            this.statusLabel.Size = new System.Drawing.Size(252, 20);
-            this.statusLabel.Text = "Drop folders or files to the left panel";
             // 
             // convertAllButton
             // 
@@ -217,12 +203,47 @@
             // 
             this.textureInfoLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.textureInfoLabel.AutoEllipsis = true;
-            this.textureInfoLabel.Location = new System.Drawing.Point(948, 648);
+            this.textureInfoLabel.Location = new System.Drawing.Point(973, 644);
             this.textureInfoLabel.Name = "textureInfoLabel";
             this.textureInfoLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.textureInfoLabel.Size = new System.Drawing.Size(314, 25);
+            this.textureInfoLabel.Size = new System.Drawing.Size(277, 19);
             this.textureInfoLabel.TabIndex = 15;
             this.textureInfoLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // inputListContextMenuStrip
+            // 
+            this.inputListContextMenuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.inputListContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.closeSelectedToolStripMenuItem,
+            this.closeAllToolStripMenuItem});
+            this.inputListContextMenuStrip.Name = "inputListContextMenuStrip";
+            this.inputListContextMenuStrip.Size = new System.Drawing.Size(174, 52);
+            // 
+            // closeAllToolStripMenuItem
+            // 
+            this.closeAllToolStripMenuItem.Name = "closeAllToolStripMenuItem";
+            this.closeAllToolStripMenuItem.Size = new System.Drawing.Size(173, 24);
+            this.closeAllToolStripMenuItem.Text = "Close all";
+            this.closeAllToolStripMenuItem.Click += new System.EventHandler(this.closeAllToolStripMenuItem_Click);
+            // 
+            // closeSelectedToolStripMenuItem
+            // 
+            this.closeSelectedToolStripMenuItem.Name = "closeSelectedToolStripMenuItem";
+            this.closeSelectedToolStripMenuItem.Size = new System.Drawing.Size(173, 24);
+            this.closeSelectedToolStripMenuItem.Text = "Close selected";
+            this.closeSelectedToolStripMenuItem.Click += new System.EventHandler(this.closeSelectedToolStripMenuItem_Click);
+            // 
+            // statusLabel
+            // 
+            this.statusLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.statusLabel.AutoEllipsis = true;
+            this.statusLabel.Location = new System.Drawing.Point(13, 644);
+            this.statusLabel.Name = "statusLabel";
+            this.statusLabel.Size = new System.Drawing.Size(952, 19);
+            this.statusLabel.TabIndex = 17;
+            this.statusLabel.Text = "Drop folders or files to convert ";
+            this.statusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // mainForm
             // 
@@ -230,6 +251,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1262, 673);
+            this.Controls.Add(this.statusLabel);
             this.Controls.Add(this.textureInfoLabel);
             this.Controls.Add(this.formatComboBox);
             this.Controls.Add(this.formatLabel);
@@ -240,7 +262,6 @@
             this.Controls.Add(this.convertSelectedButton);
             this.Controls.Add(this.copyToClipboard);
             this.Controls.Add(this.convertAllButton);
-            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.listBox1);
             this.Controls.Add(this.pictureBox1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -251,20 +272,16 @@
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.mainForm_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.mainForm_DragEnter);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.statusStrip1.ResumeLayout(false);
-            this.statusStrip1.PerformLayout();
+            this.inputListContextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.ListBox listBox1;
-        private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.Button convertAllButton;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
-        private System.Windows.Forms.ToolStripStatusLabel statusLabel;
         private System.Windows.Forms.Button copyToClipboard;
         private System.Windows.Forms.Button convertSelectedButton;
         private System.Windows.Forms.CheckBox useFileFolderCheckBox;
@@ -275,6 +292,10 @@
         private System.Windows.Forms.Label formatLabel;
         private System.Windows.Forms.ComboBox formatComboBox;
         private System.Windows.Forms.Label textureInfoLabel;
+        private System.Windows.Forms.ContextMenuStrip inputListContextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem closeAllToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem closeSelectedToolStripMenuItem;
+        private System.Windows.Forms.Label statusLabel;
     }
 }
 
